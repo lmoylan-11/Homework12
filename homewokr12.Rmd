@@ -1,0 +1,138 @@
+---
+title: "Homework12"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE, message=FALSE)
+library(dplyr)
+library(ggplot2)
+library(DBI)
+library(duckdb)
+```
+
+
+
+```{r}
+library(readxl)
+penguinsdata <- read_excel("penguins.xlsx")
+```
+
+#### Question 1
+
+```{r}
+
+loaded_penguins<- "penguins.xlsx"
+
+page1 <- read_excel(loaded_penguins, sheet = 1)
+page2   <- read_excel(loaded_penguins, sheet = 2)
+page3  <- read_excel(loaded_penguins, sheet = 3)
+```
+
+
+^[Question 1 complete]
+
+#### Question 2
+
+
+```{r}
+page1 <- page1 %>% 
+  mutate(
+    bill_length_mm = as.numeric(bill_length_mm),
+    bill_depth_mm = as.numeric(bill_depth_mm),
+    flipper_length_mm = as.numeric(flipper_length_mm),
+    body_mass_g = as.numeric(body_mass_g)
+  )
+
+page2 <- page2 %>% 
+  mutate(
+    bill_length_mm = as.numeric(bill_length_mm),
+    bill_depth_mm = as.numeric(bill_depth_mm),
+    flipper_length_mm = as.numeric(flipper_length_mm),
+    body_mass_g = as.numeric(body_mass_g)
+  )
+
+page3 <- page3 %>% 
+  mutate(
+    bill_length_mm = as.numeric(bill_length_mm),
+    bill_depth_mm = as.numeric(bill_depth_mm),
+    flipper_length_mm = as.numeric(flipper_length_mm),
+    body_mass_g = as.numeric(body_mass_g)
+  )
+
+penguins_long <- bind_rows(page1, page2, page3)
+```
+
+^[Question 2 complete]
+
+
+#### Question 3
+
+```{r}
+ggplot(data = penguins_long, aes(x = bill_length_mm, y = bill_depth_mm, color = species)) +
+  geom_point(na.rm = TRUE) +        
+  facet_wrap(~island) +             
+  labs(
+    title = "Penguin Bill Dimensions by Island and Species",
+    x = "Bill Length",
+    y = "Bill Depth",
+    color = "Species"
+  ) +
+  theme_minimal()
+```
+^[Question 3 complete]
+
+
+#### Question 4
+
+```{r}
+body_mass_table <- penguins_long %>%
+  group_by(species) %>%
+  summarize(
+    avg_body_mass_g = mean(body_mass_g, na.rm = TRUE))
+
+body_mass_table %>% knitr::kable()
+```
+
+^[Question 4 complete]
+
+
+### Penguin Database
+
+#### Question 1
+
+```{r}
+con <- DBI::dbConnect(duckdb::duckdb())
+```
+^[Question 1 complete]
+
+
+#### Question 2
+
+```{r}
+DBI::dbWriteTable(con, "penguins", penguins_long)
+```
+
+^[Question 2 complete]
+
+
+#### Question 3
+
+```{r}
+penguins_db <- tbl(con, "penguins")
+```
+^[Question 3 complete]
+
+#### Question 4
+
+```{r}
+penguins_db %>%
+  group_by(species) %>%
+  summarize(
+    avg_body_mass_g = mean(body_mass_g, na.rm = TRUE)
+  )%>%
+  show_query()
+```
+^[Question 4 complete]
